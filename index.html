@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selection Sort Visualization</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        @import url(https://fonts.googleapis.com/css?family=Cinzel+Decorative:400,900);
+
+        body {
+            background: linear-gradient(135deg, rgb(9, 9, 27) 0%, rgb(39, 8, 39) 50%, rgb(92, 84, 84) 100%);
+            font-family: 'Arial', sans-serif;
+            position: relative;
+        }
+        h1 {
+            text-shadow: -1px;
+            font-family: 'Arial', sans-serif;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+        }
+        .input-container {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+        }
+        .array-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            margin-top: 250px;
+            margin-bottom: 2rem;
+            max-width: 80%;
+            padding: 0 20px;
+        }
+        .array-item {
+            transition: background-color 0.3s, transform 0.3s, opacity 0.3s;
+            margin: 0.5rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border: 2px solid #2563eb;
+            background-color: white;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .highlight {
+            background-color: #2563eb;
+            color: #fff;
+            transform: scale(1.2);
+            opacity: 1;
+        }
+        .swap-highlight {
+            background-color: #ffc107;
+            color: white;
+        }
+        .sorted-highlight {
+            background-color: #28a745;
+            color: white;
+        }
+        .button {
+            font-family: 'Arial', sans-serif;
+            border: 1px solid gray;
+            color: white;
+            padding: 2.5px 4px;
+            text-align: center;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 30px;
+        }
+        .button:hover {
+            background-color: #2a1879;
+            transition-duration: .4s;
+        }
+        input {
+            font-family: 'Arial', sans-serif !important;
+            font-size: 16px !important;
+        }
+        .code-container {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            width: auto;
+            max-width: 550px;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-start justify-start min-h-screen relative">
+
+    <h1 class="text-3xl font-bold mb-8">Selection Sort Visualization</h1>
+    <div class="input-container">
+        <input type="text" id="arrayInput" placeholder="Enter numbers separated by commas (e.g. 4,3,2,1)" class="p-2 border border-gray-300 rounded mb-4 w-96" />
+        <div class="flex space-x-4">
+            <button id="selectionSortButton" class="button bg-green-500 text-white py-2 px-4 rounded">Selection Sort</button>
+        </div>
+    </div>
+
+    <div class="array-container flex justify-center mb-6" id="arrayContainer"></div>
+    <div class="iteration-info mt-4 text-lg text-white" id="iterationInfo"></div>
+
+    <div class="code-container">
+        <pre class="code-snippet p-4 text-black rounded-lg overflow-x-auto bg-gray-100">
+            <code id="codeSnippet" class="language-javascript">
+function selectionSort(arr) {
+    for (let i = 0; i < arr.length; i++) {
+        let minIndex = i;
+        for (let j = i + 1; j < arr.length; j++) {
+            if (arr[j] < arr[minIndex]) {
+                minIndex = j;
+            }
+        }
+        if (minIndex !== i) {
+            let temp = arr[i];
+            arr[i] = arr[minIndex];
+            arr[minIndex] = temp;
+        }
+    }
+}
+            </code>
+        </pre>
+    </div>
+
+    <script>
+        // Original selection sort function code
+        const originalCode = `
+function selectionSort(arr) {
+    for (let i = 0; i < arr.length; i++) {
+        let minIndex = i;
+        for (let j = i + 1; j < arr.length; j++) {
+            if (arr[j] < arr[minIndex]) {
+                minIndex = j;
+            }
+        }
+        if (minIndex !== i) {
+            let temp = arr[i];
+            arr[i] = arr[minIndex];
+            arr[minIndex] = temp;
+        }
+    }
+}`;
+
+        // Selection Sort Algorithm
+        function selectionSort(arr) {
+            const iterations = [];
+            for (let i = 0; i < arr.length; i++) {
+                let minIndex = i;
+                for (let j = i + 1; j < arr.length; j++) {
+                    iterations.push({ i, j, minIndex, swapped: false });
+                    if (arr[j] < arr[minIndex]) {
+                        minIndex = j;
+                    }
+                }
+                if (minIndex !== i) {
+                    [arr[i], arr[minIndex]] = [arr[minIndex], arr[i]];
+                    iterations.push({ i, minIndex, swapped: true });
+                }
+            }
+            return iterations;
+        }
+
+        // Function to visualize selection sort
+        async function visualizeSelectionSort() {
+            const arrayInput = document.getElementById('arrayInput').value;
+            const arrayContainer = document.getElementById('arrayContainer');
+            const iterationInfo = document.getElementById('iterationInfo');
+
+            const arr = arrayInput.split(',').map(Number);
+            arrayContainer.innerHTML = '';
+
+            const iterations = selectionSort([...arr]);
+            let currentIteration = 0;
+
+            // Create array elements and control line break after 10 elements
+            arr.forEach((num, index) => {
+                const item = document.createElement('div');
+                item.className = 'array-item';
+                item.innerHTML = num;
+                arrayContainer.appendChild(item);
+
+                if ((index + 1) % 10 === 0) {
+                    const lineBreak = document.createElement('div');
+                    lineBreak.style.flexBasis = '100%';
+                    arrayContainer.appendChild(lineBreak);
+                }
+            });
+
+            const displayIteration = async () => {
+                if (currentIteration < iterations.length) {
+                    const { i, j, minIndex, swapped } = iterations[currentIteration];
+                    const elements = document.querySelectorAll('.array-item');
+
+                    elements.forEach(element => {
+                        element.classList.remove('highlight', 'swap-highlight', 'sorted-highlight');
+                    });
+
+                    elements[i].classList.add('highlight');
+                    elements[minIndex].classList.add('highlight');
+
+                    // Update code snippet with current values
+                    let modifiedCode = originalCode
+                        .replace(/arr\[i\]/g, `arr[${i}] (${arr[i]})`)
+                        .replace(/arr\[minIndex\]/g, `arr[${minIndex}] (${arr[minIndex]})`);
+
+                    document.getElementById('codeSnippet').innerHTML = modifiedCode
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/`/g, "&grave;");
+
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    if (swapped) {
+                        [elements[i].innerHTML, elements[minIndex].innerHTML] = [elements[minIndex].innerHTML, elements[i].innerHTML];
+                        elements[i].classList.add('swap-highlight');
+                        elements[minIndex].classList.add('swap-highlight');
+                    }
+
+                    if (currentIteration === iterations.length - 1 || j === arr.length - i - 1) {
+                        elements[i].classList.add('sorted-highlight');
+                    }
+
+                    iterationInfo.innerHTML = `Comparing index ${i} and ${minIndex}`;
+
+                    currentIteration++;
+                    setTimeout(displayIteration, 1000);
+                } else {
+                    iterationInfo.innerHTML += `<br>Sorting Complete`;
+                }
+            };
+
+            displayIteration();
+        }
+
+        // Event listeners
+        document.getElementById('selectionSortButton').addEventListener('click', visualizeSelectionSort);
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js"></script>
+</body>
+</html>
